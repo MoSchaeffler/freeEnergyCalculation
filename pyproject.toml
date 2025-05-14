@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "freenet"
+version = "0.1.0"
+description = "Python module to calculate the free energies from a state trajectory"
+authors = [{ name="Your Name", email="you@example.com" }]
+license = { text="MIT" }
+readme = "README.md"
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+]
+packages = ["freenet"]
+dependencies = [
+  "PyYAML",
+]
+python-requires = ">=3.7"
+

@@ -37,6 +37,9 @@ class getEnergy:
         # False: use ts1.data and if a transitionstate exists in ts2.data that does not exist in ts1.data use that one
         self.mts = mts
         self.dic = dic
+
+        # run
+        self.run()
         
     #############################################
     ####              RUN                   #####
