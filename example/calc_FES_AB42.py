@@ -1,12 +1,5 @@
 #!/usr/bin/python3
 
-import numpy as np
-import sys
-import glob
-
-import pyemma
-import pyemma.coordinates as pyc
-
 import freenet
 
 
