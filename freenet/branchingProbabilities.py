@@ -1,166 +1,199 @@
 #!/usr/bin/python3
 
+from typing import Dict, Callable, Optional
 import numpy as np
 
 verbose = False
 
 
-class calcProbabilities:
+def calcProbabilities(
+    tm: np.array,
+    remove: bool = True,
+    save: bool = False,
+    sysname: str = "system",
+) -> (np.array, np.array):
     """
-    Calculates the rquilibrium probabilities of each minimum, 
+    Computes the equilibrium probabilities of each minimum,
     as well branching probabilities for transitions between connected state
 
     Parameters
     ----------
-    traj : Trajectory
-        MD trajectory object (e.g., from MDTraj or MDAnalysis).
-    cutoff : float
-        Clustering cutoff distance.
-    temperature : float
-        Simulation temperature in Kelvin.
+    tm : Transition Matrix
+        2D numpy object containing number of transitions between each state
+    sysname : str
+        System name for saving
+    remove : bool
+        use algorithm removing non biderctional transitions between states
+    save: bool
+        save branching probabilities and equilibrium state probabilities to file
 
-    Attributes
-    ----------
-    nodes : list of Node
-        Identified minima.
-    edges : list of Edge
-        Transition-state connections.
+    Returns
+    -------
+    state_probabilities : ndarray of shape (n_states,)
+        The euilibrium probability of occupying each free‐energy minimum.
+    probability_matrix : ndarray of shape (n_states, n_states)
+        The transition‐probability matrix between minima, where
+        entry `(i, j)` is the probability of moving from state `i` to `j`.
     """
 
-    def __init__(self, sysname, tm_path, remove=False):
+    # n states
+    n_min = len(tm[0])
 
-        # Load transition matrix
-        self.tm = np.load(tm_path)
-        # nstates
-        self.nmin = len(self.tm[0])
+    ############################
+    ###  equi. Probabilities ###
+    ############################
 
-        ############################
-        ###  equi. Probabilities ###
-        ############################
+    # population of each node by summing over all incoming flow
+    pop_m = np.sum(tm, axis=0)
+    # normalize
+    peq_m = pop_m / np.sum(pop_m)
 
-        # population of each node by summing over all incoming flow
-        pop_m = np.sum(self.tm, axis=0)
-        # probabiliy
-        peq_m = pop_m / np.sum(pop_m)
+    ############################
+    ###   Branching Prob.    ###
+    ############################
 
-        ############################
-        ###   Branching Prob.    ###
-        ############################
+    # norm matrix so that rows sum to 0 -> right stochastic matrix
+    rm = np.zeros((n_min, n_min))
 
-        # norm matrix so that rows sum to 0 -> right stochastic matrix
-        rm = np.zeros((self.nmin, self.nmin))
+    # if mts == True delete transitions that are not bidirectional and delete disconnected states
+    if remove == False:
+        T = tm
 
-        # if mts == True delete transitions that are not bidirectional and delete disconnected states
-        if remove == False:
-            T = self.tm
+    if remove == True:
+        print("Processing Transition Matrix")
+        T = np.zeros((n_min, n_min))
+        for i in range(n_min):
+            for j in range(n_min):
 
-        if remove == True:
-            print("Processing Transition Matrix")
-            T = np.zeros((self.nmin, self.nmin))
-            for i in range(self.nmin):
-                for j in range(self.nmin):
+                t = tm[i, j]
 
-                    t = self.tm[i, j]
-
-                    if i == j:
+                if i == j:
+                    T[i, j] = t
+                else:
+                    if tm[j, i] != 0:
                         T[i, j] = t
-                    else:
-                        if self.tm[j, i] != 0:
-                            T[i, j] = t
 
-            print("Removing non bidirectional transition states")
-            i = 0
-            s = 1
-            while i < self.nmin:
-
-                l = np.count_nonzero(T[i])
-
-                if l == 1:
-
-                    T = np.delete(T, i, axis=0)
-                    T = np.delete(T, i, axis=1)
-
-                    self.nmin -= 1
-
-                    if verbose == True:
-                        print("removed state {}".format(s))
-
-                if l != 1:
-                    i += 1
-
-                s += 1
-
-            print("Done")
-
-        """
-        for i in range(self.nmin):
-            row = T[i]
-            n = np.sum(row)
-            rm[i] = row/n
-        """
+        print("Removing non bidirectional transition states")
         i = 0
-        delEntries = []
+        s = 1
+        while i < n_min:
 
-        print("---------------------------------------------------------")
-        print("Start Normalization")
-        rm = np.zeros((self.nmin, self.nmin))
-        print("Dimension Probability Matrix: ", rm.shape)
-        while i < self.nmin:
-            if i == 0:
-                rm = np.zeros((self.nmin, self.nmin))
+            l = np.count_nonzero(T[i])
+
+            if l == 1:
+
+                T = np.delete(T, i, axis=0)
+                T = np.delete(T, i, axis=1)
+
+                n_min -= 1
+
                 if verbose == True:
-                    print("Dimension Probability Matrix: ", rm.shape)
+                    print("removed state {}".format(s))
 
-            row = T[i]
-            n = np.sum(row)
-            if n == 0:
-                if verbose == True:
-                    print("state {} has no outgoing transitions".format(i))
-                    print("delete entry and reinitialize")
-                T = np.delete(T, i, 0)
-                T = np.delete(T, i, 1)
-                delEntries.append(i)
-                i = 0
-                self.nmin = self.nmin - 1
-                # update prob eq list
-                peq_m = peq_m[:-1]
-
-            else:
-                rm[i] = row / n
-                # print(np.sum(rm[i]))
+            if l != 1:
                 i += 1
 
-        print("End Normalization")
-        print("Dimension Probability Matrix: ", rm.shape)
+            s += 1
 
-        # write everyting
-        self.writeProbMatrix(rm, sysname + "_branchingProbabilities.txt")
+        print("Done")
 
-        self.writeProbabilities(peq_m, sysname + "_equiProb.txt")
+    """
+    for i in range(n_min):
+        row = T[i]
+        n = np.sum(row)
+        rm[i] = row/n
+    """
+    i = 0
+    delEntries = []
 
-    ############################
-    ###   Helper Functions   ###
-    ############################
+    print("---------------------------------------------------------")
+    print("Start Normalization")
+    rm = np.zeros((n_min, n_min))
+    print("Dimension Probability Matrix: ", rm.shape)
+    while i < n_min:
+        if i == 0:
+            rm = np.zeros((n_min, n_min))
+            if verbose == True:
+                print("Dimension Probability Matrix: ", rm.shape)
 
-    def writeProbMatrix(self, T, outname):
+        row = T[i]
+        n = np.sum(row)
+        if n == 0:
+            if verbose == True:
+                print("state {} has no outgoing transitions".format(i))
+                print("delete entry and reinitialize")
+            T = np.delete(T, i, 0)
+            T = np.delete(T, i, 1)
+            delEntries.append(i)
+            i = 0
+            n_min = n_min - 1
+            # update prob eq list
+            peq_m = peq_m[:-1]
 
-        with open(outname, "w") as f:
+        else:
+            rm[i] = row / n
+            # print(np.sum(rm[i]))
+            i += 1
 
-            for i in range(self.nmin):
-                row = str(T[i, 0])
-                for j in range(1, self.nmin):
-                    row += "\t " + str(T[i, j])
+    print("End Normalization")
+    print("Dimension Probability Matrix: ", rm.shape)
 
-                row += "\n"
-                f.write(row)
+    # write everyting
+    if save == True:
+        writeProbMatrix(rm, sysname + "_branchingProbabilities.txt")
 
-    def writeProbabilities(self, P, outname):
+        writeProbabilities(peq_m, sysname + "_equiProb.txt")
 
-        with open(outname, "w") as f:
+    return peq_m, rm
 
-            prob = str(P[0])
-            for i in range(1, self.nmin):
-                prob += "\t" + str(P[i])
 
-            prob += "\n"
-            f.write(prob)
+############################
+###   Helper Functions   ###
+############################
+
+
+def writeProbMatrix(M: np.array, outname: str) -> None:
+    """
+    Write matrix of branching probabilities to .txt file
+
+    Parameters
+    ----------
+    M : np.array
+        matrix of branching probabilities
+    outname: str
+        name of out file
+    """
+    nmin = len(M)
+
+    with open(outname, "w") as f:
+
+        for i in range(nmin):
+            row = str(M[i, 0])
+            for j in range(1, nmin):
+                row += "\t " + str(M[i, j])
+
+            row += "\n"
+            f.write(row)
+
+
+def writeProbabilities(P, outname):
+    """
+    Write minima equilibrium probabilities to .txt file
+
+    Parameters
+    ----------
+    P : np.array
+        matrix of brequilibrium probabilities
+    outname: str
+        name of out file
+    """
+    nmin = len(P)
+
+    with open(outname, "w") as f:
+
+        prob = str(P[0])
+        for i in range(1, nmin):
+            prob += "\t" + str(P[i])
+
+        prob += "\n"
+        f.write(prob)

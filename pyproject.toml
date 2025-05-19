@@ -16,6 +16,9 @@ classifiers = [
 packages = ["freenet"]
 dependencies = [
   "PyYAML",
+  "numpy",
+  "networkx",
+  "pyemma",
 ]
 python-requires = ">=3.7"
 
