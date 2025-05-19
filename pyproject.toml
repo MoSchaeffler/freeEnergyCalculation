@@ -19,5 +19,4 @@ dependencies = [
   "networkx",
   "pyemma",
 ]
-python-requires = ">=3.7"
 
