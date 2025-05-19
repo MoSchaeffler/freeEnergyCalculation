@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "freenet"
-version = "0.1.0"
+version = "2.0.0"
 description = "Python module to calculate the free energies from a state trajectory"
 authors = [{ name="Your Name", email="you@example.com" }]
 license = { text="MIT" }
