@@ -6,6 +6,8 @@ import sys
 import glob
 from pathlib import Path
 
+import pickle as pkl
+
 import pyemma
 import pyemma.coordinates as pyc
 
@@ -58,6 +60,10 @@ def clusterStates(
     data = pyc.load(str(Path(directory) / f"fullTrajectory_{prefix}.npy"))
 
     c_rS = pyc.cluster_regspace(data, dmin=cutoff, max_centers=max_centers)
+
+    # save model
+    with open(f'cluster_model_{prefix}.pkl', 'wb') as f:
+        pkl.dump(c_rS, f, protocol=pkl.HIGHEST_PROTOCOL)
 
     N_cl = c_rS.n_clusters
 
