@@ -34,7 +34,13 @@ This framework ensures that the equilibrium distribution and kinetic rates are f
 
 ## Installation
 
-Clone the repository and install with pip:
+Install directly into your environment
+
+```bash
+pip install git+https://github.com/MoSchaeffler/freeEnergyCalculation@main#egg=freenet
+```
+
+or clone the repository and install with pip:
 
 ```bash
 git clone https://github.com/MoSchaeffler/freeEnergyCalculation.git
