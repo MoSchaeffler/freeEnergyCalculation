@@ -1,12 +1,12 @@
 # Example: Free Energy Surface Calculation
 
-This example demonstrates how to compute a free energy surface (FES) from molecular‐dynamics trajectories using the `calc_FES.py` script included in the `freenet` module. In this workflow we go through the following steps:
+This example demonstrates how to compute a free energy surface (FES) from molecular‐dynamics trajectories using the `calc_FES_AB42.py` script included in the `freenet` module. In this workflow we go through the following steps:
 
 - **Clustering** of the data to define discrete microstates  
 - **Transition‐matrix estimation** between microstates  
 - **Free‐energy database** generation (minima and transition‐state free energies) in a format readable by PATHSAMPLE  
 
-All steps are shown in the running running example of the `calc_FES.py` script
+All steps are shown in the running running example of the `calc_FES_AB42.py` script
 
 ---
 
@@ -98,6 +98,10 @@ These outputs are compatible with disconnectivity graph analysis tools (e.g., PA
 
 ### Full Example Script
 
+The example script `calc_FES_AB42.py` is a working example which uses two MD trajectories, in reduced DRID space. 
+For more details regarding dimensionaltity reduction via the DRID metric see: https://github.com/MoSchaeffler/DRIDmetric
+
+The example performs all previous described steps at once similar to this:
 ```python
 import freenet as fn
 
@@ -113,8 +117,3 @@ energy.run(mts=True)
 ```
 
 Run this script after preparing your trajectory data, and you will obtain the free energy landscape in `min.data` and `ts.data`.
-
-
-## Data Format
-
-For more details regarding dimensionaltity reduction via the DRID metric see: https://github.com/MoSchaeffler/DRIDmetric
