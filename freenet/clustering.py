@@ -8,8 +8,10 @@ from pathlib import Path
 
 import pickle as pkl
 
-import pyemma
-import pyemma.coordinates as pyc
+#import pyemma
+#import pyemma.coordinates as pyc
+
+from deeptime.clustering import RegularSpace
 
 def clusterStates(
     prefix: str,
@@ -56,10 +58,16 @@ def clusterStates(
     np.save(str(Path(directory) / f"fullTrajectory_{prefix}.npy"),traj_full)
 
     #### Cluster full dataset
+    # stack dimensions into 2d array of size (n_frames, n_dims)
+    n_frames = traj_full.shape[0]
+    data = traj_full.reshape(n_frames,-1)
 
-    data = pyc.load(str(Path(directory) / f"fullTrajectory_{prefix}.npy"))
+    print(traj_full.shape,data.shape)
+    print(traj_full[0])
+    print(data[0])
 
-    c_rS = pyc.cluster_regspace(data, dmin=cutoff, max_centers=max_centers)
+    model = RegularSpace(dmin=cutoff, max_centers=max_centers)
+    c_rS = model.fit(data).fetch_model()
 
     # save model
     with open(f'cluster_model_{prefix}.pkl', 'wb') as f:
@@ -76,9 +84,11 @@ def clusterStates(
     M = np.zeros((N_cl, N_cl))
 
     for i in range(nf):
-        data = pyc.load(files[i])
+        traj = np.load(files[i])
+        n_frames = traj.shape[0]
+        data = traj.reshape(n_frames,-1)
 
-        t = c_rS.assign(data)
+        t = c_rS.transform(data)
 
         # add to transition matrix
         transitions = zip(t[:-1], t[1:])

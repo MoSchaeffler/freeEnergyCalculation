@@ -17,6 +17,7 @@ dependencies = [
   "PyYAML",
   "numpy",
   "networkx",
-  "pyemma",
+  "deeptime",
+  "mdanalysis",
 ]
 
