@@ -62,10 +62,6 @@ def clusterStates(
     n_frames = traj_full.shape[0]
     data = traj_full.reshape(n_frames,-1)
 
-    print(traj_full.shape,data.shape)
-    print(traj_full[0])
-    print(data[0])
-
     model = RegularSpace(dmin=cutoff, max_centers=max_centers)
     c_rS = model.fit(data).fetch_model()
 
