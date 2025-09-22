@@ -44,7 +44,7 @@ def clusterStates(
     """
 
     # get data
-    pattern = str(Path(directory) / f"{prefix}_*")
+    pattern = str(Path(directory) / f"{prefix}*.npy")
     files = glob.glob(pattern)
     nf = len(files)
 
