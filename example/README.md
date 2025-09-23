@@ -12,6 +12,47 @@ All steps are shown in the running running example of the `calc_FES_AB42.py` scr
 
 ## Step by step guide
 
+### Step 0: Installation
+
+#### Python
+
+Use Python ≥ 3.9 (tested with 3.12).
+
+#### Create a virtual environment
+
+```bash
+python -m venv .venv
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
+```
+
+#### Install packckage + dependencies
+
+```bash
+pip install git+https://github.com/MoSchaeffler/freeEnergyCalculation@main#egg=freenet
+```
+
+Dependencies:
+
+* `numpy`
+* `deeptime`
+* `MDAnalysis`
+
+The dependencies should be intalled automatically alongside the package
+
+#### Download example folder
+
+If you want a working example download the project folder
+
+```bash
+git clone https://github.com/MoSchaeffler/freeEnergyCalculation
+```
+
+and navigate to the example subfolder.
+
+The main way to use this package is via the provided `calc_FES_AB42.py` script.
+
+---
+
 ### Step 1: Prepare input data
 
 Assume you have saved molecular dynamics trajectory descriptors (e.g., DRID vectors) as `.npy` files with a common prefix:
@@ -49,6 +90,9 @@ This step:
 - Writes per-trajectory state assignments (`state-trj_traj_i.txt`, `.npy`).
 - Builds and saves the transition matrix `traj_TransitionMatrix.npy`.
 
+The `cutoff`and `max_centers` are hyperparameters that can be tuned to achieve a more coarse- or more fine-grained definition of minima.
+However, it is adviced to keep the parameters fixed across systems if multiple simulations are compared against each other.
+
 ---
 
 ### Step 3: Compute equilibrium and branching probabilities
@@ -82,6 +126,7 @@ energy = fn.getEnergy(
 # Run the workflow with the mean-transition-state algorithm enabled
 energy.run(mts=True)
 ```
+Here the `timescale` is the time between frames of the provided trajectory.
 
 This step:
 - Validates data consistency (`checkData`).
